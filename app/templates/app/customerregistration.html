@@ -1,0 +1,74 @@
+{% extends 'app/base.html' %}
+{% load static %}
+{% block title %}Customer Registration{% endblock title %}
+{% block main-content %}
+<style>
+      .errorlist{
+        color: red;
+        list-style-type:none;
+      }
+      .success{
+        color:green;
+      }
+</style>
+<div class="container">
+ <div class="row my-3">
+  <div class="col-sm-6 offset-sm-3">
+   <h3>Customer Registration</h3>
+   <hr>
+
+
+   <form action="" method="post" novalidate class="shadow p-5">
+      {% csrf_token %}
+      <div class="mb-3">
+         <label for="inputEmail4" class="form-label">Name</label>
+         <input type="email" name="name"class="form-control" id="inputEmail4">
+         {{form.errors.name}}
+        </div>
+
+      <div class="mb-3">
+      <label for="inputEmail4" class="form-label">Email</label>
+      <input type="email" name ="email" class="form-control" id="inputEmail4">
+      <div id="emailHelp" class="form-text" required >We'll never share your email with anyone else.</div>
+      {{form.errors.email}}
+      </div>
+      <div class="mb-3">
+      <label for="inputPassword1" class="form-label">Password</label>
+      <input type="password" name = "password1" class="form-control" id="inputPassword1">
+      </div>
+      {% comment %} <div class="mb-3">
+      <label for="inputPassword2" class="form-label">Confirm Password</label>
+      <input type="password" name ="password2" class="form-control" id="inputPassword2">
+      </div> {% endcomment %}
+      {% if messages %}
+       {% for message in messages %}
+        
+         <span {% if message.tags %}   class ="{{message.tags}}"  {% endif %}>
+            {{message}}</span>
+
+        {% endfor %}
+
+    {% endif %}
+      <div class="text-end">
+      <button type="Submit" class="btn btn-danger">Submit</button>
+      </div>
+      <br>
+      <div class="text-center text-primary fw-bold"><small>Existing User ? <a href="{% url 'login' %}"
+         class="text-danger">Login Now</a> </small></div>
+         
+      </form>
+      
+
+     
+   
+
+  </div>
+ </div>
+</div>
+
+
+
+
+   
+
+{% endblock main-content %}
