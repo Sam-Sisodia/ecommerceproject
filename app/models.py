@@ -44,6 +44,7 @@ class Product(models.Model):
     def __str__(self):
         return str(self.id)
 
+  
 
 class Cart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -52,6 +53,11 @@ class Cart(models.Model):
     
     def __str__(self):
         return str(self.id)
+    
+    @property
+    def total_cost(self):
+        return self.quantity * self.product.selling_price
+
 
 
 

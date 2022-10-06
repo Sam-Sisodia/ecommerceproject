@@ -1,7 +1,5 @@
-from curses.panel import bottom_panel
-import email
-from unicodedata import category, name
-from urllib import response
+
+import re
 from django.shortcuts import render,HttpResponse,redirect
 from .models import *
 from django.views  import View
@@ -12,6 +10,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as user_logout
+from django.db.models import Q
+from django.http import JsonResponse
 
 # def home(request):
 #  return render(request, 'app/home.html')
@@ -39,17 +39,10 @@ class product_detail(View):
 
  
 
-def add_to_cart(request):
- return render(request, 'app/addtocart.html')
+
 
 def buy_now(request):
  return render(request, 'app/buynow.html')
-
-def profile(request):
- return render(request, 'app/profile.html')
-
-def address(request):
- return render(request, 'app/address.html')
 
 def orders(request):
  return render(request, 'app/orders.html')
@@ -136,6 +129,177 @@ def logout(request):
     user_logout(request)
     return render(request, 'app/customerregistration.html')
 
+class profileview(View):
+    def get(self,request):
+        form = CustomerProfileform()
+        return render(request, 'app/profile.html',{'form':form,'active':'btn-primary'})  
+    def post(self,request):
+        form = CustomerProfileform(request.POST)
+        if form.is_valid():
+            usr = request.user
+            name = form.cleaned_data['name']
+            locality = form.cleaned_data['locality']
+            city = form.cleaned_data['city']
+            zipcode = form.cleaned_data['zipcode']
+            state = form.cleaned_data['state']
+            user = customer(user = usr ,name=name ,locality= locality,city=city,zipcode=zipcode,state=state)
+            user.save()
+            messages.success(request,"Profile Update Sucessfully ")   
+        return render(request, 'app/profile.html',{'form':form,'active':'btn-primary'})  
+
+
+def address(request):
+    address = customer.objects.filter(user = request.user)
+    return render(request, 'app/address.html',{'address':address,'active':'btn-primary'})
+
+
+
+def add_to_cart(request):
+    user = request.user  
+    print(user)
+    product_id = request.GET.get('prod_id')
+    print(product_id)
+    product = Product.objects.get(id=product_id)
+    Cart(user=user,product=product).save()
+    #return render(request, 'app/addtocart.html')
+    return redirect('/cart')
+
+
+
+
+'''
+SHOW  CART  VIEW WITHOUT  PAYMENT 
+
+def show_cart(request):
+    user  = request.user
+    cart = Cart.objects.filter(user=user)
+    return render(request, 'app/addtocart.html',{'carts':cart})
+
+'''
+
+
+def show_cart(request):
+    if request.user.is_authenticated:
+        user  = request.user
+        cart = Cart.objects.filter(user=user)
+        print(cart)
+        amount = 0.0
+        shipping_amount= 70.0
+        total_amount = 0.0
+        cart_product =  [ p for p in Cart.objects.all() if p.user == user]
+
+        if cart_product: 
+            for p in cart_product:
+                tempamount = (p.quantity * p.product.selling_price)
+                amount = amount +tempamount
+                total_amount =  amount +shipping_amount
+
+        return render(request, 'app/addtocart.html',{'carts':cart , 'amount':amount,'total_amount':total_amount})
+
+
+def plus_cart(request):
+    if request.method == "GET":
+        prod_id = request.GET.get('prod_id')
+        c = Cart.objects.get(Q(product = prod_id) & Q(user=request.user))
+        c.quantity+=1
+        c.save()
+        amount = 0.0
+        shipping_amount= 70.0
+        cart_product =  [ p for p in Cart.objects.all() if p.user == request.user]
+        for p in cart_product:
+            tempamount = (p.quantity * p.product.selling_price)
+            amount = amount +tempamount
+            total_amount =  amount +shipping_amount
+        data = {
+            'quantity':c.quantity,
+            'amount'  : amount,
+            'total_amount': total_amount
+            }
+        return JsonResponse(data)
+
+def minus_cart(request):
+    if request.method == "GET":
+        prod_id = request.GET.get('prod_id')
+        c = Cart.objects.get(Q(product = prod_id) & Q(user=request.user))
+        c.quantity-=1
+        c.save()
+        amount = 0.0
+        shipping_amount= 70.0
+        cart_product =  [ p for p in Cart.objects.all() if p.user == request.user]
+        for p in cart_product:
+            tempamount = (p.quantity * p.product.selling_price)
+            amount = amount +tempamount
+            #total_amount =  amount +shipping_amount
+        data = {
+            'quantity':c.quantity,
+            'amount'  : amount,
+            'total_amount':amount+  shipping_amount
+            }
+        return JsonResponse(data)
+
+def remove_cart(request):
+    if request.method == "GET":
+        prod_id = request.GET.get('prod_id')
+        c = Cart.objects.get(Q(product = prod_id) & Q(user=request.user))
+        c.delete()
+        amount = 0.0
+        shipping_amount= 70.0
+        cart_product =  [ p for p in Cart.objects.all() if p.user == request.user]
+        for p in cart_product:
+            tempamount = (p.quantity * p.product.selling_price)
+            amount = amount +tempamount
+            #total_amount =  amount +shipping_amount
+        data = {
+           # 'quantity':c.quantity,
+            'amount'  : amount,
+            'total_amount' : amount+ shipping_amount
+            }
+        return JsonResponse(data)
+
+
+
 
 def checkout(request):
- return render(request, 'app/checkout.html')
+  user = request.user
+  currentuser = customer.objects.filter(user=user)
+  cart_items = Cart.objects.filter(user=user)
+  amount = 0.0
+  shipping_amount= 70.0
+  total_amount = 0.0
+  cart_product =  [ p for p in Cart.objects.all() if p.user == user]
+  if cart_product: 
+    for p in cart_product:
+        tempamount = (p.quantity * p.product.selling_price)
+        amount = amount +tempamount
+    total_amount =  amount +shipping_amount
+
+  return render(request, 'app/checkout.html',{'total_amount': total_amount,'currentuser':currentuser,'cart_items':cart_items})
+
+
+
+
+# sudo  /opt/lampp/./manager-linux-x64.run
+
+
+
+
+'''
+ <hr>
+    <form action="">
+      {% for user in  currentuser %}
+      <div class="card">
+        <div class="card-body">
+        <h5>{{user.name}}</h5>
+        <p>{{user.locality}},{{user.city}},{{user.zipcode}}, {{user.state}}</p>
+        </div>
+      </div>
+        <div class="form-check mt-2 mb-5">
+          <input class="form-check-input" type="radio" value="">
+          <label class="form-check-label fw-bold" for="">
+            Address: {{forloop.counter}}</label>
+        </div>
+        {{endfor}}
+        <div class="text-end">
+
+
+'''

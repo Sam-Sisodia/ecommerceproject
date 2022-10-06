@@ -1,11 +1,12 @@
-import email
-import imp
-from operator import imod
+
+
+
 from . models import *
 
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.contrib.auth.models import User
+from django.forms import ModelForm
 
 
 class UserRegistrationForm(forms.Form):
@@ -22,7 +23,7 @@ class UserRegistrationForm(forms.Form):
             raise forms.ValidationError("Username Already Exists")
         elif   len(validatname) <4 :
             raise forms.ValidationError("Enter more then 5 Charecter ")
-
+ 
         return validatname
 
 
@@ -34,7 +35,17 @@ class UserRegistrationForm(forms.Form):
     
 
     
+class CustomerProfileform(forms.ModelForm):
+    class Meta:
+        model = customer
+        fields = ['name','locality','city','zipcode','state']
+        widgets ={ 'name':forms.TextInput(attrs={'class':'form-control'}),
+                    'locality':forms.TextInput(attrs={'class':'form-control'}),
+                    'city':forms.TextInput(attrs={'class':'form-control'}),
+                    'state':forms.Select(attrs={'class':'form-control'}),
+                    'zipcode':forms.NumberInput(attrs={'class':'form-control'}),
 
+        }
 
 # class UserRegistrationForm(UserCreationForm):
 #     pass
