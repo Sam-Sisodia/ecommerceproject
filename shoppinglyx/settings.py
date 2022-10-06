@@ -146,8 +146,40 @@ MEDIA_ROOT = BASE_DIR /'media'
 
 
 
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'sajal89304@gmail.com'
-EMAIL_HOST_PASSWORD = 'Pfqpvlgygsmjxabc'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+strip 
+https://www.geekinsta.com/integrate-stripe-with-django/
+sajal89304@gmail.com
+sajalstrip
+key - pk_test_51Lpr69SBhsZQTAsZsU0BW8WWMyPWqSvDkHhAgsMYurCcyZ4pz1qtejB6CVD9o0VNaPd8GAAOvd3YUnkQOJqr77D900LFdqD9BN
+
+sec key -  sk_test_51Lpr69SBhsZQTAsZcDb8TpeVA3nwwysa20fdaMmtBWEEqzgem2zIO24jWgorYq5DKUqIhyGBAff1JZsISZgUciK700QYdIgSvN
+
+'''

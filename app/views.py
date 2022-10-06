@@ -1,5 +1,8 @@
 
+import imp
+from itertools import product
 import re
+from statistics import quantiles
 from django.shortcuts import render,HttpResponse,redirect
 from .models import *
 from django.views  import View
@@ -13,6 +16,12 @@ from django.contrib.auth import logout as user_logout
 from django.db.models import Q
 from django.http import JsonResponse
 
+
+''' user permission urls after login '''
+
+
+from django.contrib.auth.decorators import login_required #functionbased view 
+from django.utils.decorators import  method_decorator     #classbased
 # def home(request):
 #  return render(request, 'app/home.html')
 
@@ -32,7 +41,10 @@ class Productview(View):
 class product_detail(View):
     def get(self,request,pk,):
         product  = Product.objects.get(pk=pk)
-        return render(request, 'app/productdetail.html',{'product':product})
+        item_already_in_cart= False
+        if request.user.is_authenticated:
+            item_already_in_cart = Cart.objects.filter(Q(product=product.id) & Q(user=request.user)).exists()
+        return render(request, 'app/productdetail.html',{'product':product,'item_already_in_cart':item_already_in_cart})
 
 
 
@@ -44,8 +56,7 @@ class product_detail(View):
 def buy_now(request):
  return render(request, 'app/buynow.html')
 
-def orders(request):
- return render(request, 'app/orders.html')
+
 
 def change_password(request):
  return render(request, 'app/changepassword.html')
@@ -124,12 +135,15 @@ def login(request):
 
 
 
-
+@login_required(login_url='/login/')
 def logout(request):
     user_logout(request)
-    return render(request, 'app/customerregistration.html')
+    return redirect('login')
 
-class profileview(View):
+from django.contrib.auth.mixins import LoginRequiredMixin
+class profileview(LoginRequiredMixin,View):
+    login_url = '/login/'
+        
     def get(self,request):
         form = CustomerProfileform()
         return render(request, 'app/profile.html',{'form':form,'active':'btn-primary'})  
@@ -147,13 +161,12 @@ class profileview(View):
             messages.success(request,"Profile Update Sucessfully ")   
         return render(request, 'app/profile.html',{'form':form,'active':'btn-primary'})  
 
-
 def address(request):
     address = customer.objects.filter(user = request.user)
     return render(request, 'app/address.html',{'address':address,'active':'btn-primary'})
 
 
-
+@login_required(login_url='/login/')
 def add_to_cart(request):
     user = request.user  
     print(user)
@@ -163,8 +176,6 @@ def add_to_cart(request):
     Cart(user=user,product=product).save()
     #return render(request, 'app/addtocart.html')
     return redirect('/cart')
-
-
 
 
 '''
@@ -177,7 +188,7 @@ def show_cart(request):
 
 '''
 
-
+@login_required(login_url='/login/')
 def show_cart(request):
     if request.user.is_authenticated:
         user  = request.user
@@ -196,7 +207,7 @@ def show_cart(request):
 
         return render(request, 'app/addtocart.html',{'carts':cart , 'amount':amount,'total_amount':total_amount})
 
-
+@login_required(login_url='/login/')
 def plus_cart(request):
     if request.method == "GET":
         prod_id = request.GET.get('prod_id')
@@ -216,7 +227,7 @@ def plus_cart(request):
             'total_amount': total_amount
             }
         return JsonResponse(data)
-
+@login_required(login_url='/login/')
 def minus_cart(request):
     if request.method == "GET":
         prod_id = request.GET.get('prod_id')
@@ -237,6 +248,10 @@ def minus_cart(request):
             }
         return JsonResponse(data)
 
+
+
+
+@login_required(login_url='/login/')
 def remove_cart(request):
     if request.method == "GET":
         prod_id = request.GET.get('prod_id')
@@ -258,7 +273,7 @@ def remove_cart(request):
 
 
 
-
+@login_required(login_url='/login/')
 def checkout(request):
   user = request.user
   currentuser = customer.objects.filter(user=user)
@@ -274,6 +289,113 @@ def checkout(request):
     total_amount =  amount +shipping_amount
 
   return render(request, 'app/checkout.html',{'total_amount': total_amount,'currentuser':currentuser,'cart_items':cart_items})
+
+
+
+@login_required(login_url='/login/')
+def paymentdone(request):
+    user = request.user
+    print(user)
+    custid = request.GET.get('custid')
+    print(custid)
+    cutomers = customer.objects.get(id=custid)
+    cart= Cart.objects.filter(user=user)
+    for c in cart:
+        OrderPlace(user=user, customer=cutomers, product= c.product, quantity= c.quantity).save()
+        c.delete()
+
+    return redirect("orders")
+
+
+@login_required(login_url='/login/')
+def orders(request):
+    order_placed = OrderPlace.objects.filter(user=request.user)
+    return render(request, 'app/orders.html', {'order_placed':order_placed})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

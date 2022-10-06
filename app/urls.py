@@ -16,6 +16,8 @@ urlpatterns = [
     path('pluscart/', views.plus_cart, name='pluscart'),
     path('minuscart/', views.minus_cart, name='minuscart'),
     path('removecart/', views.remove_cart, name='removecart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('paymentdone/', views.paymentdone, name='paymentdone'),
 
     path('buy/', views.buy_now, name='buy-now'),
     path('profile/', views.profileview.as_view(), name='profile'),
@@ -27,8 +29,91 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
     path('registration/', views.customerregistration, name='customerregistration'),
-    path('checkout/', views.checkout, name='checkout'),
+
+   
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

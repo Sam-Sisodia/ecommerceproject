@@ -78,5 +78,7 @@ class OrderPlace(models.Model):
     ordered_date  = models.DateTimeField(auto_now_add=True)
     status = models.CharField(choices=Status_Choices,max_length=10, default='Pending')
 
-
+    @property
+    def total_cost(self):
+        return self.quantity * self.product.selling_price
 
